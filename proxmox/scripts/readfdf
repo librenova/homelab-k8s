@@ -1,0 +1,149 @@
+Proxmox Cloud-Init Template Creation Script
+📌 Overview
+The create_proxmox_template.sh script automates the creation of Cloud-Init templates in Proxmox. It downloads a Cloud-Init image, provisions a VM, configures Cloud-Init support, and converts the VM into a template.
+
+Additionally, it includes pre- and post-creation hooks to ensure smooth execution.
+
+🛠 Features
+✅ Automated Proxmox Template Creation – No manual VM setup required.
+✅ Supports Multiple Operating Systems – Ubuntu, Rocky Linux, Debian, and AlmaLinux.
+✅ Dynamic VM ID Allocation – Avoids conflicts with existing VMs.
+✅ Pre-Creation Hook – Validates system resources and template duplication.
+✅ Post-Creation Hook – Provides instructions for cloning the template.
+✅ Error Handling – Ensures downloads are valid before proceeding.
+
+📂 Folder Structure
+bash
+Copy
+Edit
+/var/lib/vz/snippets/
+│── create_proxmox_template.sh    # The script for Proxmox Cloud-Init template creation
+│── README.md                      # Documentation explaining the script
+🔹 How It Works
+1️⃣ OS Selection
+The script presents a menu of supported operating systems.
+The user selects an OS, and the script fetches the corresponding Cloud-Init image.
+2️⃣ Find the Next Available VM ID
+The script dynamically finds the next available VM ID in Proxmox to prevent conflicts.
+3️⃣ Download the Cloud-Init Image
+The script downloads the Cloud-Init image and verifies its integrity before proceeding.
+4️⃣ Create a New VM in Proxmox
+A new VM is created with allocated CPU, RAM, and networking.
+5️⃣ Import the Cloud-Init Image
+The downloaded Cloud-Init image is imported into Proxmox storage.
+6️⃣ Configure Cloud-Init Support
+The script configures:
+Boot disk
+Serial console
+QEMU guest agent
+Cloud-Init support
+7️⃣ Convert the VM into a Template
+The configured VM is converted into a Proxmox template for future cloning.
+8️⃣ Cleanup
+The downloaded Cloud-Init image is removed to save disk space.
+📜 Pre-Creation Hook
+Before creating the template, the script performs pre-checks:
+
+✅ Ensures at least 10GB free space is available.
+✅ Checks if a template with the same name already exists in Proxmox.
+🔹 Pre-Creation Hook Code
+bash
+Copy
+Edit
+pre_creation_tasks() {
+    echo "🔍 Checking system requirements..."
+    
+    # Ensure at least 10GB free space
+    FREE_SPACE=$(df -h /var/lib/vz | awk 'NR==2 {print $4}')
+    echo "✅ Free Space: $FREE_SPACE"
+    
+    # Check if template already exists
+    if qm list | grep -q "$TEMPLATE_NAME"; then
+        echo "❌ ERROR: A template with the name '$TEMPLATE_NAME' already exists!"
+        exit 1
+    fi
+}
+📜 Post-Creation Hook
+After the template is created, the script:
+
+✅ Displays a success message.
+✅ Provides instructions on cloning the template.
+🔹 Post-Creation Hook Code
+bash
+Copy
+Edit
+post_creation_tasks() {
+    echo "🎉 Template Created Successfully!"
+    echo "➡ To clone this template, run:"
+    echo "   qm clone $NEXT_VM_ID 200 --name cloned-vm --full true"
+}
+🚀 Usage Instructions
+1️⃣ Run the Script
+sh
+Copy
+Edit
+bash create_proxmox_template.sh
+2️⃣ Select an OS
+yaml
+Copy
+Edit
+📌 Select an OS for the Proxmox Cloud-Init Template:
+1) ubuntu-22.04
+2) rocky-8
+3) debian-11
+4) almalinux-9
+#? 2
+3️⃣ The Script Automates the Following:
+✅ Downloads the Cloud-Init Image
+✅ Creates a Proxmox VM
+✅ Configures Cloud-Init
+✅ Converts the VM into a Template
+✅ Provides instructions for cloning the template
+
+🔧 Troubleshooting
+❌ ERROR: Failed to Download Cloud-Init Image
+✔ Solution: Ensure the Cloud-Init image URL is correct.
+✔ Test Manually: Try downloading using wget:
+
+sh
+Copy
+Edit
+wget https://dl.rockylinux.org/pub/rocky/8/images/x86_64/Rocky-8-GenericCloud-Base.latest.x86_64.qcow2
+❌ ERROR: A Template with This Name Already Exists
+✔ Solution: Run qm list to check existing templates:
+
+sh
+Copy
+Edit
+qm list
+✔ Delete the Existing Template:
+
+sh
+Copy
+Edit
+qm destroy <VM_ID>
+🛠 Enhancements & Next Steps
+✨ Automate VM Cloning – Extend the script to create multiple VMs from the template.
+✨ Add Kubernetes Node Provisioning – Automate the setup of Kubernetes Master and Worker nodes.
+✨ Multi-Cloud Deployment – Extend the script for AWS, GCP, and Azure.
+🔗 Useful Proxmox Commands
+List All VMs
+sh
+Copy
+Edit
+qm list
+Clone a Template to a New VM
+sh
+Copy
+Edit
+qm clone 9000 200 --name my-new-vm --full true
+Delete a VM
+sh
+Copy
+Edit
+qm destroy 200
+📌 Conclusion
+This script automates the creation of Cloud-Init templates in Proxmox, reducing manual work and ensuring a consistent environment for Kubernetes, CI/CD pipelines, and infrastructure automation.
+
+✅ Pre-Creation Checks ✅ Cloud-Init Support ✅ Template Creation ✅ Post-Creation Instructions
+

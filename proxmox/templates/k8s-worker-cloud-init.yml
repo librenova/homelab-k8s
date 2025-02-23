@@ -1,0 +1,29 @@
+#cloud-config
+hostname: k8s-worker
+manage_etc_hosts: true
+
+users:
+  - name: ubuntu
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    shell: /bin/bash
+    ssh_authorized_keys:
+      - ssh-rsa AAAA...your-public-key...xyz
+
+package_update: true
+package_upgrade: true
+packages:
+  - qemu-guest-agent
+  - curl
+  - apt-transport-https
+  - ca-certificates
+  - software-properties-common
+
+runcmd:
+  - systemctl enable qemu-guest-agent
+  - systemctl start qemu-guest-agent
+  - modprobe br_netfilter
+  - sysctl -w net.ipv4.ip_forward=1
+  - echo "net.ipv4.ip_forward=1" >> /etc/sysctl.conf
+  - sysctl --system
+  - apt-get update && apt-get install -y kubeadm kubelet kubectl
+  - kubeadm join 192.168.1.100:6443 --token YOUR-TOKEN --discovery-token-ca-cert-hash sha256:YOUR-HASH
