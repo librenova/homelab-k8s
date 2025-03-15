@@ -1,0 +1,7 @@
+- name: Install and configure Fail2Ban
+  hosts: all
+  tasks:
+    - name: Install Fail2Ban
+      apt:
+        name: fail2ban
+        state: present

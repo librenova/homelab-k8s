@@ -1,0 +1,23 @@
+terraform {
+  required_providers {
+    proxmox = {
+      source  = "Telmate/proxmox"
+      version = "3.0.1-rc6"
+    }
+  }
+}
+
+
+provider "proxmox" {
+  pm_api_url      = var.pm_api_url
+  pm_user         = var.pm_user
+  pm_password     = var.pm_password
+  pm_tls_insecure = true
+}
+
+provider "proxmox" {
+pm_api_url      = "https://192.168.4.54:8006/api2/json"
+  pm_api_token_id = "root@pam!terraform"
+  pm_api_token_secret = "8af2ce52-3b65-40d9-8ee0-a93928528133"
+  pm_tls_insecure = true  # Set to `false` in production if using a valid SSL certificate
+}

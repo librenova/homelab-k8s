@@ -1,0 +1,7 @@
+auto vmbr0
+iface vmbr0 inet static
+  address 192.168.1.1
+  netmask 255.255.255.0
+  bridge_ports eno1
+  bridge_stp off
+  bridge_fd 0

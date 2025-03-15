@@ -1,0 +1,2 @@
+instance-id: proxmox-vm-01
+local-hostname: proxmox-node

@@ -1,0 +1,31 @@
+variable "proxmox_node" {
+  description = "Proxmox node name"
+  default     = "pve"
+}
+
+variable "template_id" {
+  description = "VM ID for the template"
+}
+
+variable "ubuntu_version" {
+  description = "Ubuntu version"
+}
+
+variable "image_url" {
+  description = "Cloud image URL"
+}
+
+variable "storage_pool" {
+  description = "Proxmox storage pool"
+  default     = "local-lvm"
+}
+
+variable "memory" {
+  description = "Memory for the VM template"
+  default     = 4096
+}
+
+variable "cores" {
+  description = "Number of CPU cores"
+  default     = 2
+}

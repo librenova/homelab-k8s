@@ -1,0 +1,9 @@
+pm_api_url      = "https://192.168.4.54:8006/api2/json"
+pm_user         = "root@pam"
+pm_password     = "oracle"
+pm_tls_insecure = true
+
+proxmox_host    = "192.168.4.54"
+proxmox_password = "oracle"
+
+rancher_ip      = "192.168.4.155/24"

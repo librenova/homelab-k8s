@@ -1,0 +1,68 @@
+terraform {
+  required_providers {
+    proxmox = {
+      source  = "Telmate/proxmox"
+      version = "3.0.1-rc6"
+    }
+  }
+}
+
+
+resource "null_resource" "download_cloud_images" {
+  for_each = var.os_templates
+
+  provisioner "local-exec" {
+    command = <<EOT
+      ssh root@${var.proxmox_node} "mkdir -p /var/lib/vz/template/qcow2 &&
+      if [ ! -f /var/lib/vz/template/qcow2/${each.key}-cloudimg.qcow2 ]; then
+        echo 'Downloading ${each.key} Cloud Image...'
+        wget -O /var/lib/vz/template/qcow2/${each.key}-cloudimg.qcow2 ${each.value.image_url}
+      else
+        echo '✅ ${each.key} Cloud Image already exists.'
+      fi"
+    EOT
+  }
+}
+
+resource "proxmox_vm_qemu" "os_templates" {
+  for_each    = var.os_templates
+  name        = "${each.key}-template"
+  target_node = var.proxmox_node
+  vmid        = each.value.template_id
+  memory      = each.value.memory
+  cores       = each.value.cores
+  os_type     = "cloud-init"
+
+  network {
+    id     = 0
+    model  = "virtio"
+    bridge = "vmbr0"
+  }
+
+  disk {
+    slot    = "scsi0"
+    type    = "disk"
+    storage = var.storage_pool
+    size    = each.value.disk_size
+  }
+
+  disk {
+    slot    = "ide2"
+    type    = "cloudinit"
+    storage = var.storage_pool
+  }
+
+  provisioner "local-exec" {
+    command = <<EOT
+      ssh root@${var.proxmox_node} "qm importdisk ${each.value.template_id} /var/lib/vz/template/qcow2/${each.key}-cloudimg.qcow2 ${var.storage_pool};
+      qm set ${each.value.template_id} --scsihw virtio-scsi-pci --scsi0 ${var.storage_pool}:vm-${each.value.template_id}-disk-0;
+      qm set ${each.value.template_id} --ide2 ${var.storage_pool}:cloudinit;
+      qm set ${each.value.template_id} --boot order=scsi0;
+      qm set ${each.value.template_id} --serial0 socket --vga serial0;
+      qm set ${each.value.template_id} --ciuser ${each.value.default_user} --cipassword 'ChangeMe123!';
+      qm set ${each.value.template_id} --ipconfig0 ip=dhcp;
+      qm stop ${each.value.template_id};
+      qm template ${each.value.template_id}"
+    EOT
+  }
+}

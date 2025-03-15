@@ -1,0 +1,17 @@
+---
+- name: Enable UFW Firewall
+  ufw:
+    state: enabled
+
+- name: Allow SSH
+  ufw:
+    rule: allow
+    port: "22"
+    proto: tcp
+
+- name: Disable Root SSH Login
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: "^PermitRootLogin"
+    line: "PermitRootLogin no"
+  notify: Restart SSH

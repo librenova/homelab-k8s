@@ -1,0 +1,34 @@
+#cloud-config
+
+# Set the root user password
+chpasswd:
+  list: |
+    root:oracle  # Replace 'oracle' with your desired 5-letter password
+  expire: False
+
+# Ensure the root user is enabled
+users:
+  - name: root
+    lock_passwd: false
+    ssh-authorized-keys:
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQC/7HOFDqMrEt1jYGgAICz0XZVrdnd6oTwdfyMTjWh+N9/Z52IdE94uSR5OxdoMtnonpWjkfAqIv+aFAXhVKbRw7jIfTvajHslFZfbUkePqeO9EMgSqHam3a+jrePQ6l/Ugxy1zzctxJqwT89UQgZGE5SfTLOKoCPCOxaS21P+OWhpcDCTigYAAeTDHGMfrZ07S5laabq9OVkgCJDyP+KmooRjdF2GjMv8D1/tyUqNCsGOIjkXba5lFbtNuMZ6ECNKLYukx70CqD6f4U0yjQ+V35KmsG1VtIeD3Eno8x0J3Pa0aX0Er72r+gbAenrwDWSBnWZ//BWY1dGy/XEpfosqIIi+32V/PMQV+nh0vyAieIvQI6Ri8mcNjDhxqvOYgeUwoT5vhgm2w/fJ6H7a9g/XgmnTkbjdfIEvsXsboOgOEImxi7INTe+ljDGdwICC7xuR5RZ/ObDBmDZQPiAHJY8D4Oekh++Sd9rcCpaRLhqRRlUnSBhshQI5GEiZOEc4YD4JsDNbM22KrOHLDqQcse5oz/6OKT0miZeNetbQX/x9cLAh62mVBtaNHgtHFZdRwUcMU2hY1XMtfFXbxc/61Dztim/cxPLRV6KkFnGDCnHrxHykbnfa9xswMlZ6Ipyz8UyGgzdl1FoylK+pP1c8N1uEcIhusMWwFDwS83v18oA0SaQ== email@email.com  # Replace with your actual SSH public key
+    sudo: ['ALL=(ALL) NOPASSWD:ALL']
+    shell: /bin/bash
+
+# Upgrade packages
+package_update: true
+package_upgrade: true
+
+# Set static IP configuration
+network:
+  version: 2
+  ethernets:
+    eth0:
+      addresses:
+        - 192.168.4.229/24  # Static IP address
+      gateway4: 192.168.4.1  # Gateway
+      nameservers:
+        addresses:
+          - 192.168.4.1  # IPv4 DNS server
+          - 2001:4860:4860::8888  # IPv6 DNS server
+          - 2620:119:35::35  # IPv6 DNS server

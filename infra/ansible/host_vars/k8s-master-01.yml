@@ -1,0 +1,3 @@
+---
+# K8s Master Node Variables
+kubernetes_role: "master"

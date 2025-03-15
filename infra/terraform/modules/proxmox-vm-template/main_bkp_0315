@@ -1,0 +1,51 @@
+terraform {
+  required_providers {
+    proxmox = {
+      source  = "telmate/proxmox"
+      version = "3.0.1-rc6"
+    }
+  }
+}
+
+resource "proxmox_vm_qemu" "ubuntu_template" {
+  name        = var.template_name
+  vmid        = var.vm_id
+  target_node = var.node
+  clone       = "ubuntu-22.04-cloudimg"  # Replace with actual cloud image
+  full_clone  = true
+  memory      = var.memory
+  cores       = var.cpu_cores
+
+  network {
+    id     = 0  # Required for network configuration
+    model  = "virtio"
+    bridge = "vmbr0"
+  }
+
+  disk {
+    size    = var.disk_size
+    type    = "virtio"
+    storage = "local-lvm"
+    slot    = 0  # Required for disk configuration
+  }
+
+  cicustom = "user=local:snippets/cloud-init.yaml,network=local:snippets/networkdata.yml"
+
+  disk {
+    size    = "4G"
+    type    = "cloudinit"
+    storage = "local-lvm"
+    slot    = "ide2"
+  }
+
+  lifecycle {
+    ignore_changes = [disk, network]
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "cloud-init status --wait",
+      "echo 'Cloud-Init applied'"
+    ]
+  }
+}

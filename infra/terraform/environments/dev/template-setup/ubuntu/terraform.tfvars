@@ -1,0 +1,10 @@
+proxmox_api_token = "8af2ce52-3b65-40d9-8ee0-a93928528133"
+proxmox_user      = "root@pam"
+proxmox_password  = "oracle"
+ssh_public_key    = "~/.ssh/id_rsa.pub"
+template_name     = "ubuntu-22.04-template"
+vm_id             = 9000
+node              = "pve"
+memory            = 4096
+cpu_cores         = 4
+disk_size         = "50G"

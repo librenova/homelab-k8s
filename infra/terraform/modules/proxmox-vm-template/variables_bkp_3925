@@ -1,0 +1,21 @@
+variable "proxmox_node" {
+  description = "Proxmox node name"
+  default     = "192.168.4.54"
+}
+
+variable "storage_pool" {
+  description = "Proxmox storage pool"
+  default     = "local-lvm"
+}
+
+variable "os_templates" {
+  description = "Map of OS templates to create"
+  type = map(object({
+    template_id  = number
+    image_url    = string
+    memory       = number
+    cores        = number
+    disk_size    = string
+    default_user = string
+  }))
+}

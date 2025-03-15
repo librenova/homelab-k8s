@@ -1,0 +1,6 @@
+---
+- name: Common Configurations
+  hosts: all
+  become: yes
+  roles:
+    - role: common

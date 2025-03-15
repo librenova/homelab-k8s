@@ -1,0 +1,6 @@
+---
+- name: Setup Kubernetes Cluster
+  hosts: k8s_nodes
+  become: yes
+  roles:
+    - role: kubernetes

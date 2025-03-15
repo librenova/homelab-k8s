@@ -1,0 +1,46 @@
+module "os_templates" {
+  source        = "../../../../modules/proxmox-vm-template"
+ # proxmox_node  = "192.168.4.54"
+ # storage_pool  = "local-lvm"
+
+
+  providers = {
+    proxmox = telmate.proxmox
+  }
+  
+  os_templates = {
+    "ubuntu-22.04" = {
+      template_id  = 9001
+      image_url    = "https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img"
+      memory       = 4096
+      cores        = 2
+      disk_size    = "10G"
+      default_user = "ubuntu"
+    }
+    "ubuntu-20.04" = {
+      template_id  = 9002
+      image_url    = "https://cloud-images.ubuntu.com/focal/current/focal-server-cloudimg-amd64.img"
+      memory       = 4096
+      cores        = 2
+      disk_size    = "10G"
+      default_user = "ubuntu"
+    }
+    "rocky-9" = {
+      template_id  = 9003
+      image_url    = "https://dl.rockylinux.org/pub/rocky/9/images/x86_64/Rocky-9-GenericCloud-9.2-20230515.x86_64.qcow2"
+      memory       = 4096
+      cores        = 2
+      disk_size    = "10G"
+      default_user = "rocky"
+    }
+    "centos-9-stream" = {
+      template_id  = 9004
+      image_url    = "https://cloud.centos.org/centos/9-stream/x86_64/images/CentOS-Stream-GenericCloud-9-latest.x86_64.qcow2"
+      memory       = 4096
+      cores        = 2
+      disk_size    = "10G"
+      default_user = "centos"
+    }
+  }
+}
+

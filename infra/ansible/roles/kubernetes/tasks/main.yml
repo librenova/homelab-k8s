@@ -1,0 +1,12 @@
+---
+- name: Install Kubernetes dependencies
+  apt:
+    name:
+      - kubelet
+      - kubeadm
+      - kubectl
+    state: present
+
+- name: Initialize Kubernetes cluster
+  shell: kubeadm init --apiserver-advertise-address=192.168.1.10 --pod-network-cidr=10.244.0.0/16
+  when: inventory_hostname in groups['k8s_master']

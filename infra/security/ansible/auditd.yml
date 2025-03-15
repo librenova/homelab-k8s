@@ -1,0 +1,7 @@
+- name: Install audit logging
+  hosts: all
+  tasks:
+    - name: Ensure auditd is installed
+      apt:
+        name: auditd
+        state: present

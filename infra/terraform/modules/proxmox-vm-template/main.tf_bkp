@@ -1,0 +1,154 @@
+
+resource "null_resource" "download_cloud_images" {
+  provisioner "local-exec" {
+    command = <<EOT
+      mkdir -p /var/lib/vz/template/qcow2/
+      
+      # Ubuntu
+      if [ ! -f "/var/lib/vz/template/qcow2/ubuntu-${var.ubuntu_version}-cloudimg.qcow2" ]; then
+        echo "Downloading Ubuntu ${var.ubuntu_version} Cloud Image..."
+        wget -O /var/lib/vz/template/qcow2/ubuntu-${var.ubuntu_version}-cloudimg.qcow2 ${var.image_url}
+      fi
+
+      # Ubuntu 22.04
+      if [ ! -f "/var/lib/vz/template/qcow2/ubuntu-22.04-cloudimg.qcow2" ]; then
+        wget -O /var/lib/vz/template/qcow2/ubuntu-22.04-cloudimg.qcow2 \
+        https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img
+      fi
+
+      # CentOS 9 Stream
+      if [ ! -f "/var/lib/vz/template/qcow2/centos-9-stream-cloudimg.qcow2" ]; then
+        wget -O /var/lib/vz/template/qcow2/centos-9-stream-cloudimg.qcow2 \
+        https://cloud.centos.org/centos/9-stream/x86_64/images/CentOS-Stream-GenericCloud-9-latest.x86_64.qcow2
+      fi
+
+      # Rocky Linux 9
+      if [ ! -f "/var/lib/vz/template/qcow2/rocky-9-cloudimg.qcow2" ]; then
+        wget -O /var/lib/vz/template/qcow2/rocky-9-cloudimg.qcow2 \
+        https://dl.rockylinux.org/pub/rocky/9/images/x86_64/Rocky-9-GenericCloud-9.2-20230515.x86_64.qcow2
+      fi
+    EOT
+  }
+}
+
+
+resource "proxmox_vm_qemu" "rocky_template" {
+  depends_on  = [null_resource.download_rocky_image]
+  name        = "rocky-template"
+  target_node = var.proxmox_node
+  vmid        = var.template_id
+  memory      = var.memory
+  cores       = var.cores
+  os_type     = "cloud-init"
+
+  network {
+    model  = "virtio"
+    bridge = "vmbr0"
+  }
+
+  disk {
+    type    = "scsi"
+    storage = var.storage_pool
+    size    = "10G"
+  }
+
+  cloudinit_cdrom_storage = var.storage_pool
+
+  lifecycle {
+    ignore_changes = [network]
+  }
+
+  provisioner "local-exec" {
+    command = <<EOT
+      qm importdisk ${var.template_id} /var/lib/vz/template/qcow2/rocky-9-cloudimg.qcow2 ${var.storage_pool}
+      qm set ${var.template_id} --scsihw virtio-scsi-pci --scsi0 ${var.storage_pool}:vm-${var.template_id}-disk-0
+      qm set ${var.template_id} --ide2 ${var.storage_pool}:cloudinit
+      qm set ${var.template_id} --boot order=scsi0
+      qm set ${var.template_id} --serial0 socket --vga serial0
+      qm set ${var.template_id} --ciuser rocky --cipassword 'ChangeMe123!' --ipconfig0 ip=dhcp
+      qm stop ${var.template_id}
+      qm template ${var.template_id}
+    EOT
+  }
+}
+
+
+resource "proxmox_vm_qemu" "rocky_template" {
+  name        = "rocky-template"
+  target_node = var.proxmox_node
+  clone       = "rocky-9-cloudimg"
+  vmid        = 9003
+  memory      = 4096
+  cores       = 2
+}
+
+resource "proxmox_vm_qemu" "ubuntu_template1" {
+  name        = "ubuntu-template"
+  target_node = var.proxmox_node
+  vmid        = var.template_id
+  clone       = var.template_source
+  memory      = 4096
+  cores       = 2
+  os_type     = "cloud-init"
+
+  network {
+    model  = "virtio"
+    bridge = "vmbr0"
+  }
+
+  disk {
+    type    = "scsi"
+    storage = var.storage_pool
+    size    = "10G"
+  }
+
+  cloudinit_cdrom_storage = var.storage_pool
+
+  provisioner "local-exec" {
+    command = <<EOT
+      qm stop ${var.template_id}
+      qm template ${var.template_id}
+    EOT
+  }
+}
+
+
+resource "proxmox_vm_qemu" "ubuntu_template" {
+  depends_on  = [null_resource.download_ubuntu_image]
+  name        = "ubuntu-${var.ubuntu_version}-template"
+  target_node = var.proxmox_node
+  vmid        = var.template_id
+  memory      = var.memory
+  cores       = var.cores
+  os_type     = "cloud-init"
+
+  network {
+    model  = "virtio"
+    bridge = "vmbr0"
+  }
+
+  disk {
+    type    = "scsi"
+    storage = var.storage_pool
+    size    = "10G"
+  }
+
+  cloudinit_cdrom_storage = var.storage_pool
+
+  lifecycle {
+    ignore_changes = [network]
+  }
+
+  provisioner "local-exec" {
+    command = <<EOT
+      qm importdisk ${var.template_id} /var/lib/vz/template/qcow2/ubuntu-${var.ubuntu_version}-cloudimg.qcow2 ${var.storage_pool}
+      qm set ${var.template_id} --scsihw virtio-scsi-pci --scsi0 ${var.storage_pool}:vm-${var.template_id}-disk-0
+      qm set ${var.template_id} --ide2 ${var.storage_pool}:cloudinit
+      qm set ${var.template_id} --boot order=scsi0
+      qm set ${var.template_id} --serial0 socket --vga serial0
+      qm set ${var.template_id} --ciuser ubuntu --cipassword 'ChangeMe123!' --ipconfig0 ip=dhcp
+      qm stop ${var.template_id}
+      qm template ${var.template_id}
+    EOT
+  }
+}

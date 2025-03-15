@@ -1,0 +1,186 @@
+Explanation of the infra/ Folder Structure
+The infra/ folder is responsible for infrastructure provisioning, automation, and management across on-premises (Proxmox) and cloud (AWS/Azure) environments.
+
+It is structured to separate concerns like:
+
+Provisioning infrastructure (Terraform)
+Configuration management (Ansible)
+On-premises virtualization (Proxmox)
+Cloud-based infrastructure (AWS, Azure)
+Security & compliance (IAM, encryption, firewall rules)
+📂 infra/ Folder Structure
+graphql
+Copy
+Edit
+infra/
+├── terraform/             # Terraform configurations for cloud & on-prem provisioning
+│   ├── modules/          # Reusable Terraform modules for networking, VMs, storage
+│   ├── environments/     # Separate configurations for different environments (dev, prod)
+│   ├── providers.tf      # Defines cloud & Proxmox providers
+│   ├── variables.tf      # Global Terraform variables
+│   ├── outputs.tf        # Terraform outputs for reference
+│   ├── main.tf           # Main Terraform script calling modules
+│   ├── backend.tf        # Remote state backend for Terraform
+│── ansible/              # Ansible for configuration management
+│   ├── roles/            # Reusable Ansible roles (Kubernetes, security, networking)
+│   ├── playbooks/        # Playbooks for automating server setup
+│   ├── inventory/        # Hosts inventory for Proxmox, AWS, and Azure
+│   ├── group_vars/       # Global configuration variables
+│   ├── host_vars/        # Per-host configurations
+│── proxmox/              # On-premises virtualization automation
+│   ├── terraform/        # Terraform scripts for Proxmox VM provisioning
+│   ├── cloud-init/       # Cloud-Init templates for VM automation
+│   ├── scripts/          # Shell scripts for managing Proxmox VMs
+│   ├── networking/       # Network configurations for Proxmox VMs
+│   ├── backups/          # Backup and restore scripts for Proxmox
+│── cloud/                # Cloud infrastructure provisioning (AWS, Azure)
+│   ├── aws/              # AWS-specific infrastructure (EKS, VPC, IAM)
+│   ├── azure/            # Azure-specific infrastructure (AKS, VNETs, Storage)
+│   ├── multi-cloud/      # Cross-cloud configurations (IAM federation, DR, Networking)
+│── security/             # Security policies, IAM roles, and compliance configurations
+│   ├── terraform/        # Terraform configurations for security infrastructure
+│   ├── ansible/          # Ansible playbooks for security hardening
+│   ├── policies/         # Security policy documentation
+│── README.md             # Documentation for the infra folder
+📌 Breakdown of Each Section
+1️⃣ terraform/ - Infrastructure as Code (IaC)
+This folder contains Terraform configurations to provision infrastructure on both Proxmox (on-prem) and AWS/Azure (cloud).
+
+📂 Folder Structure
+graphql
+Copy
+Edit
+terraform/
+├── modules/              # Reusable Terraform modules (networking, storage, VMs)
+│   ├── networking/       # VPCs, subnets, security groups
+│   ├── storage/          # S3, Azure Blob Storage, Persistent Volumes
+│   ├── proxmox-vm/       # Proxmox VM provisioning module
+│   ├── aws-eks/          # AWS EKS cluster module
+│   ├── azure-aks/        # Azure AKS cluster module
+├── environments/         # Per-environment configurations (dev, prod)
+│   ├── dev/              # Terraform configuration for Dev environment
+│   ├── prod/             # Terraform configuration for Prod environment
+├── backend.tf            # Remote state backend for Terraform
+├── providers.tf          # Defines Terraform providers (AWS, Azure, Proxmox)
+├── variables.tf          # Terraform variables for provisioning
+├── outputs.tf            # Terraform outputs for reference
+├── main.tf               # Main Terraform script calling modules
+🔹 Role of terraform/
+✅ Automates VM creation on Proxmox.
+✅ Provisions AWS EKS / Azure AKS clusters.
+✅ Configures networking (VPCs, subnets, firewall rules, routing).
+✅ Manages cloud storage (S3, Azure Blob, Persistent Volumes).
+✅ Supports multi-cloud & hybrid infrastructure deployments.
+
+2️⃣ ansible/ - Configuration Management & Automation
+This folder contains Ansible roles and playbooks for configuring Proxmox VMs, Kubernetes clusters, and cloud services.
+
+📂 Folder Structure
+bash
+Copy
+Edit
+ansible/
+├── roles/               # Reusable roles for automation
+│   ├── common/          # Common role (install packages, configure users)
+│   ├── kubernetes/      # Role for setting up Kubernetes
+│   ├── security/        # Security hardening role
+├── playbooks/           # Playbooks for automation
+│   ├── setup-k8s.yml    # Playbook to install Kubernetes
+│   ├── setup-security.yml # Playbook for security hardening
+│   ├── common-tasks.yml # Common tasks across all servers
+├── inventory/           # Ansible inventory file for defining hosts
+│   ├── hosts            # Defines servers & groups
+├── group_vars/          # Global variables for all hosts
+├── host_vars/           # Per-host configurations
+🔹 Role of ansible/
+✅ Installs Kubernetes (K8s) and required dependencies.
+✅ Configures networking & security policies.
+✅ Manages cloud VM configurations.
+✅ Applies security hardening policies.
+
+3️⃣ proxmox/ - On-Prem Virtualization
+This folder manages Proxmox VM provisioning and automation.
+
+📂 Folder Structure
+graphql
+Copy
+Edit
+proxmox/
+├── terraform/         # Terraform for Proxmox VM automation
+├── cloud-init/        # Cloud-Init templates for VM initialization
+├── scripts/           # Automation scripts for managing Proxmox VMs
+├── networking/        # Network configurations for Proxmox
+├── backups/           # Proxmox backup & restore scripts
+🔹 Role of proxmox/
+✅ Automates VM creation & provisioning.
+✅ Configures Proxmox networking & storage.
+✅ Manages backup & disaster recovery for on-prem VMs.
+
+4️⃣ cloud/ - Cloud Infrastructure
+This folder contains Terraform & Ansible configurations for AWS & Azure.
+
+📂 Folder Structure
+bash
+Copy
+Edit
+cloud/
+├── aws/                 # AWS-specific configurations
+│   ├── eks/             # AWS EKS cluster
+│   ├── networking/      # AWS VPC, subnets, security groups
+│   ├── storage/         # AWS S3, EBS volumes
+│   ├── services/        # AWS services (RDS, Lambda, API Gateway)
+├── azure/               # Azure-specific configurations
+│   ├── aks/             # Azure AKS cluster
+│   ├── networking/      # Azure VNET, subnets, security groups
+│   ├── storage/         # Azure Blob Storage, Managed Disks
+│   ├── services/        # Azure SQL, Functions, App Service
+├── multi-cloud/         # Multi-cloud configurations (IAM federation, DR, Networking)
+🔹 Role of cloud/
+✅ Provisions AWS EKS & Azure AKS clusters.
+✅ Manages cloud networking & security.
+✅ Synchronizes multi-cloud storage (AWS S3 ↔ Azure Blob).
+✅ Implements cross-cloud IAM federation & policies.
+
+5️⃣ security/ - Security Policies & Compliance
+This folder enforces security standards across Proxmox & Cloud environments.
+
+📂 Folder Structure
+bash
+Copy
+Edit
+security/
+├── terraform/        # Terraform for security automation
+├── ansible/          # Ansible playbooks for security hardening
+├── policies/         # Security documentation & compliance rules
+🔹 Role of security/
+✅ Configures IAM roles & policies.
+✅ Applies encryption & security best practices.
+✅ Sets up firewall rules & RBAC policies.
+
+🚀 Conclusion
+✔ terraform/ - Provisions VMs, clusters, networking, storage.
+✔ ansible/ - Configures Kubernetes, security, cloud VMs.
+✔ proxmox/ - Manages on-prem virtualization & networking.
+✔ cloud/ - Deploys AWS & Azure infrastructure.
+✔ security/ - Enforces IAM, encryption & security policies.
+
+
+
+infra/
+│── terraform/                 # Infrastructure as Code (Terraform)
+│   ├── modules/               # Reusable Terraform modules
+│   │   ├── proxmox-vm/        # Single module for all Proxmox VMs (masters/workers)
+│   │   ├── networking/        # Networking (VLANs, subnets, cloud VPCs)
+│   │   ├── storage/           # Storage management (local-lvm, cloud storage)
+│   │   ├── eks-cluster/       # AWS EKS cluster module (future)
+│   │   ├── aks-cluster/       # Azure AKS cluster module (future)
+│   ├── environments/          # Environment-specific configurations
+│   │   ├── onprem/            # Proxmox-based Kubernetes cluster
+│   │   ├── cloud/             # AWS & Azure Kubernetes clusters (future)
+│── proxmox/                   # Proxmox-specific scripts & configurations
+│   ├── templates/             # VM templates for Cloud-Init
+│   ├── scripts/               # Backup, restore, and VM automation scripts
+│   ├── networking/            # VLAN, bridges, and firewall rules
+│   ├── storage/               # Proxmox storage configurations (ZFS, local-lvm)
+│   ├── backups/               # Backup and restore configurations
+│   ├── README.md              # Documentation for Proxmox setup

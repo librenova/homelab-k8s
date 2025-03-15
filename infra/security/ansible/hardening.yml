@@ -1,0 +1,7 @@
+- name: Apply system hardening
+  hosts: all
+  tasks:
+    - name: Ensure UFW is installed
+      apt:
+        name: ufw
+        state: present

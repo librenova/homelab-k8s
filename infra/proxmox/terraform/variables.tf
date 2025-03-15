@@ -1,0 +1,12 @@
+variable "proxmox_api_url" { type = string }
+variable "proxmox_user" { type = string }
+variable "proxmox_password" { type = string }
+variable "proxmox_node" { type = string }
+variable "vm_name" { type = string }
+variable "template" { type = string }
+variable "full_clone" { type = bool }
+variable "cpu_cores" { type = number }
+variable "memory" { type = number }
+variable "disk_size" { type = string }
+variable "storage_pool" { type = string }
+variable "network_bridge" { type = string }
